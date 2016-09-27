@@ -3,21 +3,22 @@
 #
 
 # Based on droidme/java
-FROM droidme/java
+FROM droidme/java:8
 MAINTAINER droidme, droidme.io
 
 # Envs
-ENV WILDFLY_VERSION 8.2.1.Final
-ENV WILDFLY_HOME /opt/wildfly
+ENV VERSION 10.1.0.Final
+ENV INSTALL_DIR /opt
+ENV WILDFLY_HOME ${INSTALL_DIR}/wildfly-${VERSION}
+ENV DEPLOYMENT_DIR ${WILDFLY_HOME}/standalone/deployments/
 
-ADD http://download.jboss.org/wildfly/${WILDFLY_VERSION}/wildfly-${WILDFLY_VERSION}.tar.gz /tmp/
+RUN curl -O https://download.jboss.org/wildfly/${VERSION}/wildfly-${VERSION}.zip \
+	&& unzip wildfly-${VERSION}.zip -d ${INSTALL_DIR} \
+	&& rm ${WILDFLY_HOME}/bin/standalone.conf \
+	&& rm wildfly-${VERSION}.zip
 
-RUN \
-  tar -zxvf /tmp/wildfly-${WILDFLY_VERSION}.tar.gz -C /opt && \
-  ln -s /opt/wildfly-${WILDFLY_VERSION} $WILDFLY_HOME && \
-  chmod +x ${WILDFLY_HOME}/bin/standalone.sh && \
-  ${WILDFLY_HOME}/bin/add-user.sh admin manage --silent
+ADD standalone.conf ${WILDFLY_HOME}/bin/
+RUN chmod a+x ${WILDFLY_HOME}/bin/standalone.sh
+ENTRYPOINT ${WILDFLY_HOME}/bin/standalone.sh -b=0.0.0.0
+EXPOSE 8080
 
-EXPOSE 8080 9990
-
-CMD ["/opt/wildfly/bin/standalone.sh", "-b", "0.0.0.0","-bmanagement","0.0.0.0"]

@@ -1,21 +1,18 @@
-#
 # droidme/java
+# oracle jre server 8
 #
+FROM centos:7
 
-# Based on droidme/linux
-FROM droidme/linux
 MAINTAINER droidme, droidme.io
 
-# Download from: http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
-ADD jdk-8u51-linux-x64.tar.gz /opt
+RUN yum update -y \
+  && yum -y install unzip \
+  && yum clean all
 
-# Envs
-ENV JAVA_HOME /opt/jdk1.8.0_51/
-ENV PATH "$PATH":/${JAVA_HOME}/bin:.:
+ENV JAVA_PKG=server-jre-8u*-linux-x64.tar.gz \
+    JAVA_HOME=/usr/java/default \
+    PATH=$PATH:/usr/java/default/bin
 
-# Add the nashorns
-RUN \
-  ln -s /${JAVA_HOME}/bin/jjs /usr/bin/jjs
+ADD $JAVA_PKG /usr/java
 
-# Define default command
-CMD ["bash"]
+RUN mv $(ls -1 -d /usr/java/*) $JAVA_HOME
